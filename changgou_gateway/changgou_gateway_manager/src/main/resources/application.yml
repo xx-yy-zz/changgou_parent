@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: managergateway
+  cloud:
+    gateway:
+      routes:
+      - id: goods
+        uri: lb://goods
+        predicates:
+        - Path=/goods/**
+        filters:
+        - StripPrefix=1
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 1
+            redis-rate-limiter.burstCapacity: 2
+            key-resolver: "#{@ipKeyResolver}"
+      - id: system
+        uri: lb://system
+        predicates:
+        - Path=/system/**
+        filters:
+        - StripPrefix=1
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+  redis:
+    host: 192.168.200.128
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:6868/eureka
+  instance:
+    prefer-ip-address: true
+server:
+  port: 9101
